@@ -1,6 +1,14 @@
 import type { Metadata } from "next";
-import { JetBrains_Mono, Rajdhani } from "next/font/google";
+import { Inter, JetBrains_Mono, Rajdhani } from "next/font/google";
+import { AuthProvider } from "@/components/providers/auth-provider";
+import { ToastProvider } from "@/components/providers/toast-provider";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 import "./globals.css";
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+});
 
 const rajdhani = Rajdhani({
   variable: "--font-rajdhani",
@@ -14,9 +22,9 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NEXUS — AI Governance IDE",
+  title: "Code Mentor | AI-Powered Security IDE",
   description:
-    "Enterprise AI governance platform for policy enforcement, model oversight, compliance automation, and zero-trust security.",
+    "Code Mentor is your AI security partner — an enterprise IDE for policy enforcement, vulnerability scanning, and compliance automation powered by Gemini.",
 };
 
 export default function RootLayout({
@@ -27,10 +35,17 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${rajdhani.variable} ${jetbrains.variable} h-full`}
+      data-theme="dark"
+      className={`${inter.variable} ${rajdhani.variable} ${jetbrains.variable} h-full`}
     >
       <body className="min-h-full font-sans antialiased">
-        {children}
+        <AuthProvider>
+          <ThemeProvider>
+            <ToastProvider>
+              {children}
+            </ToastProvider>
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

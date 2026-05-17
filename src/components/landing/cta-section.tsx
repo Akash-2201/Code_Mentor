@@ -1,8 +1,13 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowRight, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/providers/toast-provider";
 
 export function CtaSection() {
+  const { toast } = useToast();
+
   return (
     <section id="enterprise" className="relative px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
@@ -15,7 +20,7 @@ export function CtaSection() {
               Ready to govern AI at enterprise scale?
             </h2>
             <p className="mx-auto mt-4 max-w-lg text-muted-foreground">
-              Join security teams at Fortune 500 companies using NEXUS to ship AI
+              Join security teams at Fortune 500 companies using Code Mentor to ship AI
               faster — without sacrificing compliance or control.
             </p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row sm:gap-4">
@@ -25,7 +30,12 @@ export function CtaSection() {
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
-              <Button variant="neon" size="lg" className="h-12 px-8">
+              <Button
+                variant="neon"
+                size="lg"
+                className="h-12 px-8"
+                onClick={() => toast("Sales inquiry submitted! Our team will reach out within 24h.", "success")}
+              >
                 Contact sales
               </Button>
             </div>

@@ -25,7 +25,7 @@ export function ExplainabilityCard({
 }: ExplainabilityCardProps) {
   const [mode, setMode] = useState<ExplainMode>("analogy");
 
-  const content = vulnerability.explain[mode];
+  const content = vulnerability?.explain?.[mode] || "Content not available";
 
   return (
     <article
@@ -38,7 +38,7 @@ export function ExplainabilityCard({
         <p className="text-[10px] font-semibold uppercase tracking-wider text-primary">
           Explainability
         </p>
-        <p className="mt-0.5 truncate text-xs font-medium">{vulnerability.title}</p>
+        <p className="mt-0.5 truncate text-xs font-medium">{vulnerability?.title || "Unknown Vulnerability"}</p>
       </header>
 
       <div className="flex border-b border-border">
@@ -82,7 +82,7 @@ export function ExplainabilityCard({
           </p>
         )}
         <Badge variant="outline" className="mt-3 text-[9px]">
-          {vulnerability.cwe}
+          {vulnerability?.cwe || "N/A"}
         </Badge>
       </div>
     </article>

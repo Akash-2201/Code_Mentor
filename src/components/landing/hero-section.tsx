@@ -1,9 +1,14 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowRight, Play, ShieldCheck, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/components/providers/toast-provider";
 
 export function HeroSection() {
+  const { toast } = useToast();
+
   return (
     <section className="relative px-4 pb-20 pt-32 sm:px-6 sm:pt-40 lg:px-8 lg:pt-44">
       <div className="mx-auto max-w-7xl">
@@ -25,9 +30,9 @@ export function HeroSection() {
           </h1>
 
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            NEXUS is the governance IDE for security teams who need real-time policy
-            enforcement, compliance automation, and full visibility across models,
-            agents, and inference pipelines.
+            Code Mentor is your AI security partner — a governance IDE for teams who need
+            real-time policy enforcement, compliance automation, and full visibility across
+            models, agents, and inference pipelines.
           </p>
 
           <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:gap-4">
@@ -41,6 +46,7 @@ export function HeroSection() {
               variant="outline"
               size="lg"
               className="h-12 px-8 text-base gap-2 border-primary/30"
+              onClick={() => toast("Demo video launching soon — stay tuned!", "info")}
             >
               <Play className="h-4 w-4" />
               Watch demo
@@ -72,7 +78,7 @@ export function HeroSection() {
                 <span className="h-3 w-3 rounded-full bg-emerald-500/80" />
               </div>
               <span className="flex-1 text-center font-mono text-[10px] text-muted-foreground">
-                nexus-governance — production cluster
+                code-mentor — production cluster
               </span>
               <Badge variant="success" className="text-[10px]">
                 SECURE

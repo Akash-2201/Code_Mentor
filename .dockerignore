@@ -1,0 +1,35 @@
+# Dependencies
+node_modules
+
+# Next.js build output (rebuilt in container)
+.next
+
+# Version control
+.git
+.gitignore
+
+# Environment files (secrets injected via Cloud Run env vars)
+.env
+.env.local
+.env.development
+.env.production
+
+# IDE / OS
+.vscode
+.idea
+*.swp
+*.swo
+Thumbs.db
+.DS_Store
+
+# Documentation / non-essential
+README.md
+AGENTS.md
+CLAUDE.md
+deploy-instructions.md
+*.log
+
+# Test files
+__tests__
+*.test.*
+*.spec.*

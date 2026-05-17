@@ -6,7 +6,7 @@ import { NavIcon } from "@/components/ide/icon-map";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
-import { Shield } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 
 type SidebarProps = {
   activeId: string;
@@ -24,16 +24,18 @@ export function Sidebar({ activeId, onNavigate, collapsed }: SidebarProps) {
     >
       <Link
         href="/"
-        className="flex h-14 items-center gap-2 border-b border-border px-4 transition-colors hover:bg-primary/5"
+        className="flex h-14 items-center gap-2 border-b border-border px-4 transition-colors hover:bg-primary/5 group"
       >
-        <Shield className="h-6 w-6 text-primary shrink-0" />
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-cyan-400 shadow-lg shadow-cyan-500/30 shrink-0 transition-shadow group-hover:shadow-cyan-500/50">
+          <ShieldCheck className="h-4 w-4 text-white" />
+        </div>
         {!collapsed && (
           <div className="min-w-0">
-            <p className="truncate text-sm font-bold tracking-widest text-primary neon-text-cyan">
-              NEXUS
+            <p className="truncate font-[var(--font-inter)] text-sm font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+              Code Mentor
             </p>
             <p className="truncate text-[10px] uppercase text-muted-foreground">
-              AI Governance IDE
+              AI Security IDE
             </p>
           </div>
         )}

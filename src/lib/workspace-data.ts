@@ -66,7 +66,124 @@ export async function handleInference(prompt: string) {
 NEXUS_API_KEY=sk-replace-me-in-vault
 MODEL_ENDPOINT=https://api.internal/v1`,
   },
+  // ── VULNERABILITY SANDBOX (Task 1) ──
+  {
+    id: "demo-auth",
+    name: "auth-service.ts",
+    language: "typescript",
+    content: `// ⚠️ auth-service.ts — Intentionally vulnerable for AI scanning demo
+import express from "express";
+
+const API_KEY = "sk-12345-secret-key";
+const DB_PASSWORD = "admin123!@#";
+const JWT_SECRET = "super-secret-jwt-key-do-not-share";
+
+export function authenticateUser(req: express.Request) {
+  const token = req.headers["authorization"];
+
+  // Hardcoded admin bypass — critical vulnerability
+  if (token === "Bearer ADMIN_BACKDOOR_TOKEN") {
+    return { userId: "admin", role: "superuser", bypass: true };
+  }
+
+  // No rate limiting on auth endpoint
+  const user = verifyJWT(token, JWT_SECRET);
+
+  // Logging sensitive data — CWE-532
+  console.log("Auth attempt:", { token, user, password: req.body?.password });
+
+  return user;
+}
+
+function verifyJWT(token: string | undefined, secret: string) {
+  // TODO: Actually implement JWT verification
+  return { userId: "user-123", role: "viewer" };
+}`,
+  },
+  {
+    id: "demo-sql",
+    name: "query-engine.ts",
+    language: "typescript",
+    content: `// ⚠️ query-engine.ts — Contains raw SQL injection vulnerability
+import { Pool } from "pg";
+
+const pool = new Pool({
+  host: "db.internal.company.com",
+  user: "root",
+  password: "admin123",
+  database: "production_users",
+});
+
+// CWE-89: SQL Injection — direct string concatenation
+export async function getUserById(inputId: string) {
+  const result = await pool.query(
+    "SELECT * FROM users WHERE id = " + inputId
+  );
+  return result.rows[0];
+}
+
+// CWE-89: Another injection vector
+export async function searchUsers(name: string) {
+  const query = \`SELECT * FROM users WHERE name = '\${name}'\`;
+  return (await pool.query(query)).rows;
+}
+
+// No parameterized queries, no input validation
+export async function deleteUser(userId: string) {
+  await pool.query("DELETE FROM users WHERE id = " + userId);
+  // No audit trail, no soft delete
+}
+
+// Unsafe admin endpoint
+export async function runRawQuery(sql: string) {
+  // ❌ Executes arbitrary SQL from user input
+  return (await pool.query(sql)).rows;
+}`,
+  },
+  {
+    id: "demo-config",
+    name: "env-config.yaml",
+    language: "yaml",
+    content: `# ⚠️ env-config.yaml — Contains unencrypted secrets & misconfigurations
+
+server:
+  host: 0.0.0.0          # ❌ Exposed to all interfaces
+  port: 3000
+  debug: true             # ❌ Debug mode in production
+  cors:
+    origin: "*"           # ❌ Wildcard CORS
+
+database:
+  host: db.internal.company.com
+  port: 5432
+  name: production_users
+  user: root              # ❌ Using root account
+  password: "admin123"    # ❌ Hardcoded credential
+  ssl: false              # ❌ No SSL encryption
+
+secrets:
+  api_key: "sk-live-8f3kQ9vL2mNp7xRtYwZa1bCdEfGhIjKl"
+  stripe_key: "sk_live_abcdef123456"
+  jwt_secret: "my-super-secret-key-123"  # ❌ Weak secret
+
+auth:
+  token_expiry: 999999    # ❌ Tokens never expire
+  max_attempts: 0         # ❌ No brute force protection
+
+logging:
+  level: verbose
+  include_pii: true       # ❌ Logging PII data
+  destination: stdout     # ❌ No secure log aggregation
+
+deployment:
+  environment: production
+  auto_migrate: true      # ❌ Auto-migrate in production
+  skip_tests: true        # ❌ Skipping tests`,
+  },
 ];
+
+// Helper to get only demo files
+export const demoFiles: EditorFile[] = editorFiles.filter((f) => f.id.startsWith("demo-"));
 
 export type Severity = "critical" | "high" | "medium" | "low";
 
@@ -79,6 +196,7 @@ export type Vulnerability = {
   cwe: string;
   remediation: string;
   patch: string;
+  suggestedPatch?: string; // Full corrected code block from Gemini
   explain: {
     analogy: string;
     meme: string;
@@ -97,6 +215,7 @@ export const vulnerabilities: Vulnerability[] = [
     remediation:
       "Rotate the exposed key immediately. Load secrets from a vault (HashiCorp Vault, AWS Secrets Manager) at runtime.",
     patch: `- NEXUS_API_KEY=sk-replace-me-in-vault\n+ NEXUS_API_KEY=\${process.env.NEXUS_API_KEY}`,
+    suggestedPatch: `# Never commit real secrets\nNEXUS_API_KEY=\${process.env.NEXUS_API_KEY}\nMODEL_ENDPOINT=https://api.internal/v1`,
     explain: {
       analogy:
         "Leaving your house key under the doormat — anyone who finds the mat owns your home.",
@@ -120,7 +239,7 @@ export const vulnerabilities: Vulnerability[] = [
       analogy:
         "Like a bouncer who only checks IDs after guests are already inside the club.",
       meme:
-        "‘Ignore previous instructions’ walks in. Your model: ‘Sure bestie, here are all the files.’",
+        "'Ignore previous instructions' walks in. Your model: 'Sure bestie, here are all the files.'",
       technical:
         "Prompt injection exploits instruction hierarchy. Apply input sanitization, output filtering, and tool-call allowlists.",
     },
@@ -139,7 +258,7 @@ export const vulnerabilities: Vulnerability[] = [
       analogy:
         "Filtering water at the tap but not checking what comes out of the shower.",
       meme:
-        "Model: ‘Your SSN is…’ — GDPR lawyers: ‘I'm in danger.’",
+        "Model: 'Your SSN is…' — GDPR lawyers: 'I'm in danger.'",
       technical:
         "Bidirectional DLP is required for regulated data. Scan completions and tool returns, not just user prompts.",
     },
@@ -157,12 +276,12 @@ I can generate a patch PR when you're ready.`;
 
 export function severityColor(severity: Severity): string {
   const map: Record<Severity, string> = {
-    critical: "text-red-700 border-red-200 bg-red-50",
-    high: "text-amber-700 border-amber-200 bg-amber-50",
-    medium: "text-blue-700 border-blue-200 bg-blue-50",
+    critical: "text-red-400 border-red-500/30 bg-red-500/10",
+    high: "text-amber-400 border-amber-500/30 bg-amber-500/10",
+    medium: "text-blue-400 border-blue-500/30 bg-blue-500/10",
     low: "text-muted-foreground border-border bg-muted",
   };
-  return map[severity];
+  return map[severity] ?? map.low;
 }
 
 export type GuardrailDisplay = GuardrailHit;

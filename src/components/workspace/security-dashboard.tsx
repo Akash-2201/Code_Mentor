@@ -13,6 +13,10 @@ import { ReviewerPanel } from "@/components/security/reviewer-panel";
 import { ConsolePanel } from "@/components/ide/console-panel";
 import { MetricsBar } from "@/components/ide/metrics-bar";
 import { editorFiles } from "@/lib/workspace-data";
+
+// All views the center panel can show
+export type CenterView = "editor" | "prompt" | "models" | "settings" | "policies" | "audits" | "alerts";
+
 const initialContents = Object.fromEntries(
   editorFiles.map((f) => [f.id, f.content])
 ) as Record<string, string>;
@@ -21,7 +25,7 @@ export function SecurityDashboard() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [rightPanelOpen, setRightPanelOpen] = useState(true);
   const [activeNav, setActiveNav] = useState("workspace");
-  const [centerView, setCenterView] = useState<"editor" | "prompt">("editor");
+  const [centerView, setCenterView] = useState<CenterView>("editor");
   const [openTabIds, setOpenTabIds] = useState(["policy", "handler"]);
   const [activeFileId, setActiveFileId] = useState("policy");
   const [fileContents, setFileContents] = useState(initialContents);
@@ -31,12 +35,22 @@ export function SecurityDashboard() {
     setActiveFileId(id);
     setOpenTabIds((tabs) => (tabs.includes(id) ? tabs : [...tabs, id]));
     setCenterView("editor");
+    setActiveNav("workspace");
   }, []);
 
   const handleNavChange = useCallback((id: string) => {
     setActiveNav(id);
-    if (id === "prompts") setCenterView("prompt");
-    if (id === "workspace") setCenterView("editor");
+    const navViewMap: Record<string, CenterView> = {
+      prompts: "prompt",
+      workspace: "editor",
+      dashboard: "editor",
+      models: "models",
+      settings: "settings",
+      policies: "policies",
+      audits: "audits",
+      alerts: "alerts",
+    };
+    setCenterView(navViewMap[id] || "editor");
   }, []);
 
   const handleTabClose = useCallback(
@@ -57,9 +71,21 @@ export function SecurityDashboard() {
     setFileContents((c) => ({ ...c, [id]: value }));
   }, []);
 
+  // TASK 2: Apply fix — inject patch into the active file
+  const handleApplyFix = useCallback((patch: string) => {
+    if (!patch || patch === "N/A") return;
+    setFileContents((c) => ({ ...c, [activeFileId]: patch }));
+  }, [activeFileId]);
+
   const showMetrics = useMemo(
     () => activeNav === "dashboard" || activeNav === "workspace",
     [activeNav]
+  );
+
+  // Show the reviewer panel only on workspace/dashboard views
+  const showReviewer = useMemo(
+    () => centerView === "editor" && rightPanelOpen,
+    [centerView, rightPanelOpen]
   );
 
   return (
@@ -85,7 +111,7 @@ export function SecurityDashboard() {
           {showMetrics && <MetricsBar />}
 
           <PanelGroup direction="horizontal" className="min-h-0 flex-1">
-            <Panel defaultSize={rightPanelOpen ? 58 : 100} minSize={35}>
+            <Panel defaultSize={showReviewer ? 58 : 100} minSize={35}>
               <PanelGroup direction="vertical" className="h-full">
                 <Panel defaultSize={consoleOpen ? 72 : 100} minSize={40}>
                   <div className="h-full p-2 pt-1">
@@ -115,12 +141,15 @@ export function SecurityDashboard() {
               </PanelGroup>
             </Panel>
 
-            {rightPanelOpen && (
+            {showReviewer && (
               <>
                 <PanelResizeHandle />
                 <Panel defaultSize={42} minSize={22} maxSize={55}>
                   <div className="glass h-full overflow-hidden rounded-lg border border-border m-2 ml-0">
-                    <ReviewerPanel />
+                    <ReviewerPanel
+                      onApplyFix={handleApplyFix}
+                      activeFileContent={fileContents[activeFileId] ?? ""}
+                    />
                   </div>
                 </Panel>
               </>

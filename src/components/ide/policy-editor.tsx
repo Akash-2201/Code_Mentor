@@ -1,12 +1,24 @@
 "use client";
 
+import { useState } from "react";
 import { defaultPolicyCode } from "@/lib/mock-data";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Save, Wand2, FileCode2 } from "lucide-react";
+import { useToast } from "@/components/providers/toast-provider";
+import { Save, Wand2, FileCode2, Loader2 } from "lucide-react";
 
 export function PolicyEditor() {
+  const { toast } = useToast();
+  const [isSaving, setIsSaving] = useState(false);
   const lines = defaultPolicyCode.split("\n");
+
+  const handleSave = () => {
+    setIsSaving(true);
+    setTimeout(() => {
+      setIsSaving(false);
+      toast("Policy saved to workspace!", "success");
+    }, 1500);
+  };
 
   return (
     <section className="glass flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl">
@@ -19,13 +31,18 @@ export function PolicyEditor() {
           </Badge>
         </div>
         <div className="flex gap-1.5 shrink-0">
-          <Button variant="ghost" size="sm" className="hidden sm:inline-flex">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="hidden sm:inline-flex"
+            onClick={() => toast("AI Assist analyzing policy rules...", "info")}
+          >
             <Wand2 className="h-3.5 w-3.5" />
             AI Assist
           </Button>
-          <Button size="sm">
-            <Save className="h-3.5 w-3.5" />
-            Save
+          <Button size="sm" onClick={handleSave} disabled={isSaving}>
+            {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+            {isSaving ? "Saving..." : "Save"}
           </Button>
         </div>
       </header>
