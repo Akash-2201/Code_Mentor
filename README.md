@@ -115,6 +115,16 @@ Open [http://localhost:3000](http://localhost:3000) — you'll see the Code Ment
 
 ---
 
+## 🔗 Quick Links
+
+| Resource | Link |
+| :--- | :--- |
+| 🚀 **Live Production Demo** | [https://code-mentor-18789881165.us-central1.run.app/](https://code-mentor-18789881165.us-central1.run.app/) |
+| 💼 **Professional Profile** | [LinkedIn / Akash J.](https://www.linkedin.com/in/akash-j-8305a0372) |
+| 🛠️ **Project Lab** | [Explore other builds](https://github.com/Akash-2201) |
+
+---
+
 ## 📁 Project Structure
 
 ```
